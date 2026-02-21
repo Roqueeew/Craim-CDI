@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    
+    <link rel="manifest" href="manifest.json">
+
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - CDI CRAIM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body {
+            background-image: url('Inicio.jpg');
+            background-size: cover; background-position: center;
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 30px; border-radius: 20px; width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            text-align: center; color: white;
+        }
+        .input-group { margin-bottom: 12px; position: relative; text-align: left; }
+        label { display: block; font-size: 0.75rem; margin-bottom: 4px; opacity: 0.9; }
+        input, select {
+            width: 100%; padding: 10px; background: rgba(255,255,255,0.9);
+            border: none; border-radius: 8px; outline: none; color: #333;
+        }
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            background: #1abc9c; color: white; font-weight: bold;
+            cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+        .btn-link { background: none; border: none; color: white; text-decoration: underline; font-size: 0.8rem; cursor: pointer; margin-top: 10px; }
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    </style>
+    <link rel="icon" href="logo.png" type="image/png">
+
+<link rel="apple-touch-icon" href="logo.png">
+    
+</head>
+<body>
+
+    <div class="login-card" id="card">
+        <h2 id="titulo">CDI KARDEX</h2>
+        <p id="subtitulo">Gestión Médica</p>
+        
+        <div id="campos">
+            <div class="input-group">
+                <label>Usuario</label>
+                <input type="text" id="user" placeholder="Usuario">
+            </div>
+
+            <div class="input-group" id="grupoPass">
+                <label>Contraseña</label>
+                <input type="password" id="pass" placeholder="••••••••">
+            </div>
+
+            <div id="extraCampos" style="display: none;">
+                <div class="input-group">
+                    <label>Pregunta de Seguridad</label>
+                    <select id="pregunta">
+                        <option value="mascota">Nombre de tu primera mascota</option>
+                        <option value="escuela">Nombre de tu escuela primaria</option>
+                        <option value="ciudad">Ciudad donde naciste</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Respuesta</label>
+                    <input type="text" id="respuesta" placeholder="Tu respuesta">
+                </div>
+            </div>
+
+            <div id="btnIngresar">
+                <button class="btn" onclick="validar()">INGRESAR</button>
+                <button class="btn-link" onclick="modoRecuperar()">¿Olvidaste tu clave?</button><br>
+                <button class="btn-link" onclick="modoRegistro()">Crear cuenta nueva</button>
+            </div>
+
+            <div id="btnRegistro" style="display: none;">
+                <button class="btn" style="background:#3498db" onclick="registrar()">GUARDAR USUARIO</button>
+                <button class="btn-link" onclick="resetForm()">Volver</button>
+            </div>
+
+            <div id="btnRecuperar" style="display: none;">
+                <button class="btn" style="background:#f39c12" onclick="verificarRespuesta()">VERIFICAR</button>
+                <button class="btn-link" onclick="resetForm()">Volver</button>
+            </div>
+        </div>
+        <p id="mensaje" style="display:none; color:#ff4d4d; margin-top:10px; font-weight:bold;"></p>
+    </div>
+
+    <script>
+        let usuariosDB = JSON.parse(localStorage.getItem('usuarios_cdi')) || [{u:"admin", p:"1234", pr:"mascota", r:"bolita"}];
+
+        function validar() {
+            const u = document.getElementById('user').value.toLowerCase().trim();
+            const p = document.getElementById('pass').value;
+            const encontrado = usuariosDB.find(user => user.u === u && user.p === p);
+
+            if(encontrado) {
+                localStorage.setItem('sesionIniciada', 'true');
+                localStorage.setItem('usuarioActual', u);
+                window.location.href = "bienvenida.html";
+            } else { mostrarError("Usuario o clave incorrectos"); }
+        }
+
+        function modoRegistro() {
+            document.getElementById('titulo').innerText = "NUEVO USUARIO";
+            document.getElementById('extraCampos').style.display = "block";
+            document.getElementById('btnIngresar').style.display = "none";
+            document.getElementById('btnRegistro').style.display = "block";
+        }
+
+        function modoRecuperar() {
+            const u = document.getElementById('user').value;
+            if(!u) return alert("Escribe primero tu nombre de usuario para buscar la pregunta.");
+            
+            const userObj = usuariosDB.find(user => user.u === u.toLowerCase().trim());
+            if(!userObj) return alert("El usuario no existe.");
+
+            document.getElementById('titulo').innerText = "RECUPERAR CLAVE";
+            document.getElementById('subtitulo').innerText = "Responde para ver tu clave";
+            document.getElementById('grupoPass').style.display = "none";
+            document.getElementById('extraCampos').style.display = "block";
+            document.getElementById('btnIngresar').style.display = "none";
+            document.getElementById('btnRecuperar').style.display = "block";
+            document.getElementById('pregunta').value = userObj.pr;
+            document.getElementById('pregunta').disabled = true;
+        }
+
+        function registrar() {
+            const u = document.getElementById('user').value.toLowerCase().trim();
+            const p = document.getElementById('pass').value;
+            const pr = document.getElementById('pregunta').value;
+            const r = document.getElementById('respuesta').value.toLowerCase().trim();
+
+            if(!u || !p || !r) return alert("Rellena todos los campos");
+            
+            usuariosDB.push({u, p, pr, r});
+            localStorage.setItem('usuarios_cdi', JSON.stringify(usuariosDB));
+            alert("Usuario registrado. Ya puedes iniciar sesión.");
+            location.reload();
+        }
+
+        function verificarRespuesta() {
+            const u = document.getElementById('user').value.toLowerCase().trim();
+            const r = document.getElementById('respuesta').value.toLowerCase().trim();
+            const userObj = usuariosDB.find(user => user.u === u && user.r === r);
+
+            if(userObj) {
+                alert("Tu contraseña es: " + userObj.p);
+                location.reload();
+            } else { mostrarError("Respuesta incorrecta"); }
+        }
+
+        function resetForm() { location.reload(); }
+
+        function mostrarError(txt) {
+            const m = document.getElementById('mensaje');
+            m.innerText = txt; m.style.display = "block";
+            document.getElementById('card').classList.add('shake');
+            setTimeout(() => document.getElementById('card').classList.remove('shake'), 400);
+        }
+    </script>
+</body>
+</html>

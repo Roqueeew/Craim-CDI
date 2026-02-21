@@ -1,0 +1,15 @@
+{
+  "short_name": "CDI-CRAIM",
+  "name": "Sistema de Inventario CDI CRAIM",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#1abc9c",
+  "background_color": "#ffffff"
+}
